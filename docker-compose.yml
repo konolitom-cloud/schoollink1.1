@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: schoollink
+      POSTGRES_PASSWORD: schoollink
+      POSTGRES_DB: schoollink
+    ports:
+      - "5432:5432"
+    volumes:
+      - schoollink_pg:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://schoollink:schoollink@postgres:5432/schoollink?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      PORT: 4000
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+    depends_on:
+      - postgres
+    ports:
+      - "4000:4000"
+
+volumes:
+  schoollink_pg:
