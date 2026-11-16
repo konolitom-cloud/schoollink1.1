@@ -14,4 +14,5 @@ app.post('/grades',auth,roles(Role.ADMIN,Role.TEACHER),async(req:any,res)=>{cons
 app.get('/attendance',auth,async(req:any,res)=>res.json(await db.attendance.findMany({where:{student:{schoolId:req.user.schoolId}},include:{student:true,class:true},orderBy:{date:'desc'},take:200})));
 app.post('/attendance',auth,roles(Role.ADMIN,Role.TEACHER),async(req:any,res)=>{const p=z.object({studentId:z.string(),classId:z.string(),date:z.string(),status:z.enum(['PRESENT','ABSENT','LATE','EXCUSED']),note:z.string().optional()}).safeParse(req.body);if(!p.success)return res.status(400).json({error:'Données invalides'});res.status(201).json(await db.attendance.upsert({where:{studentId_date:{studentId:p.data.studentId,date:new Date(p.data.date)}},update:{status:p.data.status,note:p.data.note},create:{...p.data,date:new Date(p.data.date)}}))});
 app.get('/payments',auth,roles(Role.ADMIN,Role.ACCOUNTANT),async(req:any,res)=>res.json(await db.payment.findMany({where:{schoolId:req.user.schoolId},orderBy:{createdAt:'desc'},take:200})));
+app.get("/", (req,res) => res.sendFile(process.cwd() +"/index.html"));
 app.listen(PORT,()=>console.log(`SchoolLink API: http://localhost:${PORT}`));
